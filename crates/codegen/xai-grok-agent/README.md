@@ -176,7 +176,7 @@ All frontmatter keys use **camelCase**.
 | `outputFormat` | `string` | No | `"default"` | `"default"` or `"concise"` |
 | `bash` | `object` | No | defaults | Bash tool config overrides |
 | `bash.timeoutSecs` | `float` | No | `120.0` | Bash command timeout |
-| `bash.outputByteLimit` | `int` | No | `200000` | Max output bytes |
+| `bash.outputByteLimit` | `int` | No | `8192` | Max output chars (head+tail when exceeded) |
 | `bash.cmdPrefix` | `string` | No | `null` | Command prefix |
 | `toolNameOverrides` | `map<string,string>` | No | `{}` | Canonical → model-facing name map |
 | `paramNameOverrides` | `map<string,map>` | No | `{}` | Per-tool param name map |

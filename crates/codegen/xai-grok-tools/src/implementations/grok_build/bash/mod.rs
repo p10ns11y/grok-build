@@ -157,7 +157,7 @@ pub struct BashParams {
     /// behavior with a 5-minute foreground default.
     #[serde(default)]
     pub max_timeout_secs: Option<f64>,
-    /// Max output chars. None → DEFAULT_TOOL_OUTPUT_CHARS (20k).
+    /// Max output chars. None → [`DEFAULT_TOOL_OUTPUT_CHARS`] (8_192).
     pub output_byte_limit: Option<usize>,
     /// Command prefix to prepend to all bash commands.
     pub cmd_prefix: Option<String>,
@@ -3042,6 +3042,199 @@ mod tests {
     }
 
     // ─── Tests ───
+
+    /// Capturing mock for `output_byte_limit` resolution (default / override / TruncationCfg).
+    struct CapturingLimitMock {
+        captured_limit: std::sync::Mutex<Option<usize>>,
+    }
+
+    #[async_trait::async_trait]
+    impl TerminalBackend for CapturingLimitMock {
+        async fn run(
+            &self,
+            request: TerminalRunRequest,
+        ) -> Result<TerminalRunResult, ComputerError> {
+            *self.captured_limit.lock().unwrap() = Some(request.output_byte_limit);
+            Ok(TerminalRunResult {
+                combined_output: "ok".to_string(),
+                exit_code: Some(0),
+                truncated: false,
+                signal: None,
+                timed_out: false,
+                output_file: PathBuf::from("/tmp/test.log"),
+                total_bytes: 2,
+                pid: None,
+            })
+        }
+
+        async fn run_background(
+            &self,
+            _request: TerminalRunRequest,
+        ) -> Result<BackgroundHandle, ComputerError> {
+            Err(ComputerError::io("not supported"))
+        }
+
+        async fn get_task(&self, _task_id: &str) -> Option<TaskSnapshot> {
+            None
+        }
+
+        async fn kill_task(&self, _task_id: &str) -> KillOutcome {
+            KillOutcome::NotFound
+        }
+
+        async fn wait_for_completion(
+            &self,
+            _task_id: &str,
+            _timeout: Option<Duration>,
+        ) -> Option<TaskSnapshot> {
+            None
+        }
+
+        async fn list_tasks(&self) -> Vec<TaskSnapshot> {
+            vec![]
+        }
+    }
+
+    fn make_limit_capture_resources(
+        params: BashParams,
+        trunc: Option<crate::types::context::TruncationConfig>,
+    ) -> (Resources, Arc<CapturingLimitMock>) {
+        let capturing = Arc::new(CapturingLimitMock {
+            captured_limit: std::sync::Mutex::new(None),
+        });
+        let mut resources = Resources::new();
+        let backend: Arc<dyn TerminalBackend> = capturing.clone();
+        resources.insert(Terminal(backend));
+        resources.insert(Cwd(PathBuf::from("/tmp")));
+        resources.insert(SessionFolder(PathBuf::from("/tmp/session")));
+        resources.insert(SessionEnv(Arc::new(HashMap::new())));
+        resources.insert(NotificationHandle(ToolNotificationHandle::noop()));
+        resources.insert(Params(params));
+        if let Some(cfg) = trunc {
+            resources.insert(TruncationCfg(cfg));
+        }
+        (resources, capturing)
+    }
+
+    #[tokio::test]
+    async fn output_byte_limit_defaults_to_tool_const() {
+        let (resources, capturing) =
+            make_limit_capture_resources(BashParams::default(), None);
+        let tool = BashTool;
+        xai_tool_runtime::Tool::run(
+            &tool,
+            test_ctx(resources.into_shared()),
+            make_input("echo ok"),
+        )
+        .await
+        .unwrap();
+        let limit = capturing
+            .captured_limit
+            .lock()
+            .unwrap()
+            .expect("foreground request captured");
+        assert_eq!(
+            limit,
+            crate::DEFAULT_TOOL_OUTPUT_CHARS,
+            "BashParams::None must resolve to DEFAULT_TOOL_OUTPUT_CHARS"
+        );
+    }
+
+    #[tokio::test]
+    async fn output_byte_limit_explicit_params_override() {
+        let (resources, capturing) = make_limit_capture_resources(
+            BashParams {
+                output_byte_limit: Some(1_000),
+                ..BashParams::default()
+            },
+            None,
+        );
+        let tool = BashTool;
+        xai_tool_runtime::Tool::run(
+            &tool,
+            test_ctx(resources.into_shared()),
+            make_input("echo ok"),
+        )
+        .await
+        .unwrap();
+        let limit = capturing
+            .captured_limit
+            .lock()
+            .unwrap()
+            .expect("foreground request captured");
+        assert_eq!(limit, 1_000);
+    }
+
+    #[tokio::test]
+    async fn output_byte_limit_truncation_cfg_per_tool_override() {
+        use crate::types::context::TruncationConfig;
+        let mut cfg = TruncationConfig::default();
+        cfg.per_tool_max_output_bytes
+            .insert("run_terminal_cmd".to_string(), 512);
+        let (resources, capturing) =
+            make_limit_capture_resources(BashParams::default(), Some(cfg));
+        let tool = BashTool;
+        xai_tool_runtime::Tool::run(
+            &tool,
+            test_ctx(resources.into_shared()),
+            make_input("echo ok"),
+        )
+        .await
+        .unwrap();
+        let limit = capturing
+            .captured_limit
+            .lock()
+            .unwrap()
+            .expect("foreground request captured");
+        assert_eq!(limit, 512);
+    }
+
+    #[tokio::test]
+    async fn output_under_cap_not_truncated_real_backend() {
+        let (resources, _tmp) = make_real_resources(Some(8_192));
+        let tool = BashTool;
+        let result = xai_tool_runtime::Tool::run(
+            &tool,
+            test_ctx(resources.into_shared()),
+            make_input("printf 'hello-under-cap\\n'"),
+        )
+        .await
+        .unwrap();
+        match result {
+            BashToolOutput::Foreground(bash) => {
+                assert!(!bash.truncated, "small output must not truncate");
+                let out = String::from_utf8_lossy(&bash.output);
+                assert!(out.contains("hello-under-cap"), "got: {out}");
+            }
+            BashToolOutput::Background(_) => panic!("expected foreground"),
+        }
+    }
+
+    #[tokio::test]
+    async fn output_over_cap_truncated_real_backend() {
+        let (resources, _tmp) = make_real_resources(Some(64));
+        let tool = BashTool;
+        // ~200 ASCII chars >> 64 char cap → head+tail truncation.
+        let result = xai_tool_runtime::Tool::run(
+            &tool,
+            test_ctx(resources.into_shared()),
+            make_input("python3 -c \"print('X'*200)\""),
+        )
+        .await
+        .unwrap();
+        match result {
+            BashToolOutput::Foreground(bash) => {
+                assert!(bash.truncated, "large output must truncate under tight cap");
+                let out = String::from_utf8_lossy(&bash.output);
+                assert!(
+                    out.chars().count() <= 64 + 80,
+                    "in-model output should stay near cap (got {} chars)",
+                    out.chars().count()
+                );
+            }
+            BashToolOutput::Background(_) => panic!("expected foreground"),
+        }
+    }
 
     #[tokio::test]
     async fn foreground_command_success() {
