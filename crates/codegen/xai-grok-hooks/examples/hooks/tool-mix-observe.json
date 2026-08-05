@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/tool-mix-observe.py --from-env --write --quiet",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
