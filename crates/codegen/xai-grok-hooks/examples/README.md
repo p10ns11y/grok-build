@@ -59,6 +59,28 @@ cp examples/hooks/bin/session-log.sh ~/.grok/hooks/bin/
 chmod +x ~/.grok/hooks/bin/session-log.sh
 ```
 
+### 3b. Tool mix observe (`tool-mix-observe.json`)
+
+**Type:** passive (`SessionEnd`)
+
+Writes a **ToolMixSnapshot** (`tool_mix.json`) into the session directory at end of session: tool call counts, p50/p95/max/sum result chars by tool name, tools/user_turn, and Bash `output_byte_limit` from `resources_state.json`. Joins `chat_history.jsonl` offline — no runtime counters and no nested agent A/B.
+
+Also usable as a CLI for any past session:
+
+```sh
+python3 ~/.grok/hooks/bin/tool-mix-observe.py ~/.grok/sessions/<encoded-cwd>/<session-id>
+python3 ~/.grok/hooks/bin/tool-mix-observe.py --pick-largest 3
+```
+
+**Install:**
+```sh
+mkdir -p ~/.grok/hooks/bin
+cp examples/hooks/tool-mix-observe.json ~/.grok/hooks/
+cp examples/hooks/bin/tool-mix-observe.py ~/.grok/hooks/bin/
+chmod +x ~/.grok/hooks/bin/tool-mix-observe.py
+```
+(Requires `python3` on `PATH`. Fail-open: missing session id or files exits 0.)
+
 ### 4. Tool Activity Logger (`tool-logger.json`)
 
 **Type:** passive (`PreToolUse` + `PostToolUse`)

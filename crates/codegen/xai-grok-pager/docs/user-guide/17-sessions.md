@@ -32,11 +32,32 @@ Grok stores each session in its own directory, grouped by working directory. It 
   rewind_points.jsonl     # rewind points for /rewind undo
   signals.json            # session signals (token usage, tool/turn counters)
   feedback.jsonl          # user feedback and ratings
+  tool_mix.json           # optional: ToolMixSnapshot (calls + result sizes by tool); see below
   compaction_checkpoints/ # saved state from compaction (manual or auto)
   subagents/              # per-subagent metadata (meta.json); the child sessions live in the normal sessions tree
 ```
 
 `summary.json` is the index entry. It records the session summary and generated title, the model ID, the creation and update timestamps, the message counts, and a parent session reference for forked or restored sessions. `updates.jsonl` is the authoritative conversation log that drives `/resume` and session restore.
+
+### Offline tool mix (ToolMixSnapshot)
+
+To rank harness spend (tool **calls** × result **volume** × turns) without nested agent A/B runs, join `chat_history.jsonl` offline: map each `assistant.tool_calls[{id,name}]` to matching `tool_result` rows and measure content length by tool name. Optional `resources_state.json` records Bash `output_byte_limit` (JSON `null` means the binary default).
+
+**One-liner** (script lives in the hooks examples; install once, then analyze any session):
+
+```bash
+# Install (optional SessionEnd auto-write of tool_mix.json)
+mkdir -p ~/.grok/hooks/bin
+cp crates/codegen/xai-grok-hooks/examples/hooks/tool-mix-observe.json ~/.grok/hooks/
+cp crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py ~/.grok/hooks/bin/
+chmod +x ~/.grok/hooks/bin/tool-mix-observe.py
+
+# Analyze one session (or omit path to pick largest under $PWD)
+python3 ~/.grok/hooks/bin/tool-mix-observe.py ~/.grok/sessions/<encoded-cwd>/<session-id>
+python3 ~/.grok/hooks/bin/tool-mix-observe.py --pick-largest 3
+```
+
+With the hook installed, each **SessionEnd** writes `tool_mix.json` (`schema: tool_mix.v1`) into the session directory. See [Hooks](10-hooks.md).
 
 ---
 
