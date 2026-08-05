@@ -426,6 +426,7 @@ fn initial_injection_backend_params_use_override_min_score() {
     let initial_injection = crate::config::MemoryInitialInjectionConfig {
         enabled: true,
         min_score: Some(0.72),
+        ..Default::default()
     };
     let (adjusted, effective_min_score) =
         build_initial_injection_backend_params(&params, &initial_injection);
@@ -436,7 +437,7 @@ fn initial_injection_backend_params_use_override_min_score() {
     assert_eq!("tool", params.search_source);
 }
 #[test]
-fn initial_injection_backend_params_preserve_default_zero_min_score() {
+fn initial_injection_backend_params_inherit_search_min_score_when_unset() {
     let params = crate::session::memory::MemoryBackendParams {
         session_id: "test-session".to_owned(),
         embed_config: None,
@@ -457,7 +458,7 @@ fn initial_injection_backend_params_preserve_default_zero_min_score() {
     );
     assert_eq!("injection", adjusted.search_source);
     assert!((0.41 - adjusted.search_config.min_score).abs() < f32::EPSILON);
-    assert!((0.0 - effective_min_score as f32).abs() < f32::EPSILON);
+    assert!((0.41 - effective_min_score as f32).abs() < f32::EPSILON);
 }
 #[allow(clippy::field_reassign_with_default)]
 async fn create_test_actor_with_memory(

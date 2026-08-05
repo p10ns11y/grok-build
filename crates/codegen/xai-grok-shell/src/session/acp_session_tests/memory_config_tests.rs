@@ -30,6 +30,7 @@ fn initial_injection_backend_params_use_override_min_score() {
     let initial_injection = crate::config::MemoryInitialInjectionConfig {
         enabled: true,
         min_score: Some(0.72),
+        ..Default::default()
     };
     let (adjusted, effective_min_score) =
         build_initial_injection_backend_params(&params, &initial_injection);
@@ -40,7 +41,7 @@ fn initial_injection_backend_params_use_override_min_score() {
     assert_eq!("tool", params.search_source);
 }
 #[test]
-fn initial_injection_backend_params_preserve_default_zero_min_score() {
+fn initial_injection_backend_params_inherit_search_min_score_when_unset() {
     let params = crate::session::memory::MemoryBackendParams {
         session_id: "test-session".to_owned(),
         embed_config: None,
@@ -61,6 +62,33 @@ fn initial_injection_backend_params_preserve_default_zero_min_score() {
     );
     assert_eq!("injection", adjusted.search_source);
     assert!((0.41 - adjusted.search_config.min_score).abs() < f32::EPSILON);
+    assert!((0.41 - effective_min_score as f32).abs() < f32::EPSILON);
+}
+
+#[test]
+fn initial_injection_backend_params_allow_explicit_zero_min_score() {
+    let params = crate::session::memory::MemoryBackendParams {
+        session_id: "test-session".to_owned(),
+        embed_config: None,
+        embed_base_url: "http://localhost".to_owned(),
+        embed_api_key: None,
+        search_config: crate::config::MemorySearchConfig {
+            min_score: 0.41,
+            ..Default::default()
+        },
+        watcher: None,
+        stale_claim_secs: 60,
+        search_source: "tool",
+        embedding_credentials: crate::session::memory::EndpointScopedCredentials::none(),
+    };
+    let initial_injection = crate::config::MemoryInitialInjectionConfig {
+        enabled: true,
+        min_score: Some(0.0),
+        ..Default::default()
+    };
+    let (adjusted, effective_min_score) =
+        build_initial_injection_backend_params(&params, &initial_injection);
+    assert!((0.0 - adjusted.search_config.min_score).abs() < f32::EPSILON);
     assert!((0.0 - effective_min_score as f32).abs() < f32::EPSILON);
 }
 #[allow(clippy::field_reassign_with_default)]
@@ -512,6 +540,7 @@ async fn create_injection_ready_actor(
     config.initial_injection = crate::config::MemoryInitialInjectionConfig {
         enabled: true,
         min_score: None,
+        ..Default::default()
     };
     let mut actor =
         create_test_actor_with_memory(1_000, 100_000, 85, gateway_tx, persistence_tx, Some(config))
@@ -633,8 +662,8 @@ async fn test_first_turn_reminder_skips_when_block_persisted() {
     local
         .run_until(async {
             let persisted_block =
-                crate::session::helpers::memory_context::format_memory_reminder(&[
-                    xai_grok_tools::types::memory_backend::MemorySearchResult {
+                crate::session::helpers::memory_context::format_memory_reminder(
+                    &[xai_grok_tools::types::memory_backend::MemorySearchResult {
                         chunk_id: "prev:0".into(),
                         path: "MEMORY.md".into(),
                         start_line: 0,
@@ -643,8 +672,9 @@ async fn test_first_turn_reminder_skips_when_block_persisted() {
                         snippet: "Project uses Rust for backend services.".into(),
                         source: "workspace".into(),
                         created_at: None,
-                    },
-                ])
+                    }],
+                    crate::session::helpers::memory_context::DEFAULT_INJECT_MAX_TOTAL_CHARS,
+                )
                 .unwrap();
             let actor = create_injection_ready_actor(vec![
                 xai_grok_sampling_types::ConversationItem::system(format!(

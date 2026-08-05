@@ -2188,8 +2188,10 @@ Key options under `[memory]` in `~/.grok/config.toml`:
 | `watcher.enabled` | `true` | Watch `~/.grok/memory/` for external edits and reindex on search |
 | `search.max_results` | `6` | Default number of memory results to return |
 | `search.min_score` | `0.35` | Minimum relevance score threshold for explicit memory search and recovery paths |
-| `initial_injection.enabled` | `true` | Enable automatic first-turn memory injection |
-| `initial_injection.min_score` | `0.0` | Override score threshold for first-turn injection (`0.0` preserves historical no-filter behavior) |
+| `initial_injection.enabled` | `true` | Enable automatic first-turn memory injection (sticky system prefix for the session) |
+| `initial_injection.min_score` | *(inherits search)* | Override score threshold; when unset uses `search.min_score` (default `0.35`). Set `0.0` for historical no-filter behavior |
+| `initial_injection.max_results` | *(inherits search)* | Max results to inject; when unset uses `search.max_results` |
+| `initial_injection.max_total_chars` | `1500` | Cumulative snippet-body character budget across injected results |
 | `embedding.model` | *(unset)* | Embedding model for vector search; unset disables embeddings |
 | `embedding.dimensions` | `1024` | Embedding vector dimensions |
 

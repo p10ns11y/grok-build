@@ -14,23 +14,19 @@ pub(super) struct MemoryFlushSnapshot {
 ///
 /// This clones the session-wide backend params so tool-search and
 /// compaction-recovery backends keep their original `search_source` and search
-/// thresholds. The returned effective min score preserves the historical
-/// first-turn default of `0.0` unless the injection config explicitly
-/// overrides it.
+/// thresholds. The returned effective min score inherits
+/// [`MemorySearchConfig::min_score`] unless injection config overrides it
+/// (including an explicit `0.0` for legacy no-filter behavior).
 pub(super) fn build_initial_injection_backend_params(
     params: &crate::session::memory::MemoryBackendParams,
     initial_injection_config: &crate::config::MemoryInitialInjectionConfig,
 ) -> (crate::session::memory::MemoryBackendParams, f64) {
     let mut injection_params = params.clone();
     injection_params.search_source = "injection";
-    let effective_min_score = initial_injection_config
-        .min_score
-        .map(|min_score| {
-            injection_params.search_config.min_score = min_score;
-            min_score as f64
-        })
-        .unwrap_or(0.0);
-    (injection_params, effective_min_score)
+    let effective_min_score =
+        initial_injection_config.effective_min_score(&params.search_config);
+    injection_params.search_config.min_score = effective_min_score;
+    (injection_params, effective_min_score as f64)
 }
 
 impl SessionActor {

@@ -1719,6 +1719,11 @@ impl SessionActor {
         use xai_grok_tools::types::memory_backend::MemoryBackend as _;
         let (injection_params, configured_min_score) =
             build_initial_injection_backend_params(params, &self.memory.initial_injection_config);
+        let max_results = self
+            .memory
+            .initial_injection_config
+            .effective_max_results(&params.search_config);
+        let max_total_chars = self.memory.initial_injection_config.max_total_chars;
         let backend = crate::session::memory::MemoryBackendImpl::from_session_params(
             storage,
             &injection_params,
@@ -1736,7 +1741,7 @@ impl SessionActor {
         };
         let inject_start = std::time::Instant::now();
         let mut inject_results = backend
-            .search(&query, 6, configured_min_score)
+            .search(&query, max_results, configured_min_score)
             .await
             .unwrap_or_default();
         inject_results.retain(|result| Self::is_first_turn_memory_score_visible(result.score));
@@ -1746,6 +1751,8 @@ impl SessionActor {
         tracing::info!(
             target: xai_grok_telemetry::memory_log::TARGET,
             configured_min_score,
+            max_results,
+            max_total_chars,
             "MEMORY_INJECT_SEARCH: results={result_count}"
         );
         xai_grok_telemetry::session_ctx::log_event(
@@ -1759,7 +1766,10 @@ impl SessionActor {
                 injection_duration_ms: inject_start.elapsed().as_millis() as u64,
             },
         );
-        crate::session::helpers::memory_context::format_memory_reminder(&inject_results)
+        crate::session::helpers::memory_context::format_memory_reminder(
+            &inject_results,
+            max_total_chars,
+        )
     }
     /// Inspect `tool_calls` for a `StructuredOutput` call and decide the turn's
     /// next step, pushing the call's `tool_result` (correction / retry error /
