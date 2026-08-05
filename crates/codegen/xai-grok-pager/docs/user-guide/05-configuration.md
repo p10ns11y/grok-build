@@ -172,7 +172,7 @@ Each setting also has an environment-variable override, applied on first load on
 ```toml
 [toolset.bash]
 timeout_secs = 120.0                   # foreground command timeout in seconds (default: 120)
-output_byte_limit = 20000              # max captured output in bytes (default: 20000)
+output_byte_limit = 8192               # max captured output in chars (default: 8192; head+tail when exceeded)
 
 [toolset.ask_user_question]
 timeout_enabled = true                 # false = wait forever for answers (default: true)
