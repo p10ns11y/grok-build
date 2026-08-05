@@ -224,15 +224,25 @@ impl MemorySearchConfig {
 }
 
 /// First-turn memory injection configuration (`[memory.initial_injection]`).
+///
+/// Injected snippets are sticky in the system prompt for the whole session, so
+/// defaults aim for quality-under-cost: inherit search thresholds rather than
+/// accepting all hits (`min_score = 0.0`).
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(default)]
 pub struct MemoryInitialInjectionConfig {
     /// Whether to search memory and inject a reminder on the first turn.
     pub enabled: bool,
     /// Optional score threshold override for first-turn injection.
-    /// When `None`, the first-turn search uses the historical default of `0.0`
-    /// (no threshold filtering).
+    /// When `None`, inherits [`MemorySearchConfig::min_score`] (default 0.35).
+    /// Set explicitly (including `0.0`) to override search thresholds.
     pub min_score: Option<f32>,
+    /// Optional cap on how many results may be injected.
+    /// When `None`, inherits [`MemorySearchConfig::max_results`] (default 6).
+    pub max_results: Option<usize>,
+    /// Maximum total characters of snippet body text across all injected
+    /// results (per-snippet truncation still applies). Default: 1500.
+    pub max_total_chars: usize,
 }
 
 impl Default for MemoryInitialInjectionConfig {
@@ -240,7 +250,24 @@ impl Default for MemoryInitialInjectionConfig {
         Self {
             enabled: true,
             min_score: None,
+            max_results: None,
+            max_total_chars: 1500,
         }
+    }
+}
+
+impl MemoryInitialInjectionConfig {
+    /// Effective min score for first-turn injection search.
+    ///
+    /// Prefer an explicit injection override; otherwise use the hybrid search
+    /// threshold so sticky context is not looser than on-demand tools.
+    pub fn effective_min_score(&self, search: &MemorySearchConfig) -> f32 {
+        self.min_score.unwrap_or(search.min_score)
+    }
+
+    /// Effective result count for first-turn injection search.
+    pub fn effective_max_results(&self, search: &MemorySearchConfig) -> usize {
+        self.max_results.unwrap_or(search.max_results).max(1)
     }
 }
 

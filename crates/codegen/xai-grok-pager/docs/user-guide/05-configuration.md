@@ -280,8 +280,10 @@ max_results = 6                       # default number of results
 min_score = 0.35                      # minimum relevance score
 
 [memory.initial_injection]
-enabled = true                        # auto-inject memory on first turn
-min_score = 0.0                       # score threshold for first-turn injection
+enabled = true                        # auto-inject memory on first turn (sticky system prefix)
+# min_score inherits [memory.search].min_score when unset (default 0.35)
+# max_results inherits [memory.search].max_results when unset
+max_total_chars = 1500                # cumulative snippet budget for injection
 
 [memory.embedding]
 model = "embedding-model"             # embedding model name
