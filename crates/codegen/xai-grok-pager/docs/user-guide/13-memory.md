@@ -251,14 +251,18 @@ min_sessions = 3   # Minimum sessions since the last consolidation
 
 ### First-Turn Injection
 
-On the first turn of each session, Grok automatically searches memory for content relevant to the current project and injects it as context. This means Grok starts with knowledge from previous sessions without a reminder.
+On the first turn of each session, Grok automatically searches memory for content relevant to the current project and injects it into the **system** prompt. That block is sticky for the rest of the session (every subsequent turn pays its token cost), so thresholds default to match on-demand search rather than accepting all hits.
 
 First-turn injection can be configured:
 
 ```toml
 [memory.initial_injection]
-enabled = true     # Enable or disable first-turn injection
-min_score = 0.0    # Optional score threshold; unset by default, which applies no filtering
+enabled = true        # Enable or disable first-turn injection
+# min_score           # Optional; when unset, inherits [memory.search].min_score (default 0.35)
+# max_results         # Optional; when unset, inherits [memory.search].max_results (default 6)
+max_total_chars = 1500  # Cap cumulative snippet body size across injected results
+# For legacy no-filter behavior: min_score = 0.0
+# To A/B without sticky cost: enabled = false (use memory_search tools only)
 ```
 
 ### After Compaction
@@ -386,7 +390,9 @@ To edit memory from the shell, open the files in your editor directly -- for exa
 | Key | Default | Description |
 |-----|---------|-------------|
 | `enabled` | `true` | Enable first-turn memory injection |
-| `min_score` | unset | Score threshold for first-turn results. When unset, Grok applies no threshold, which is equivalent to `0.0`. |
+| `min_score` | unset (inherits search) | Score threshold for first-turn results. When unset, inherits `[memory.search].min_score` (default `0.35`). Set `0.0` for historical no-filter behavior. |
+| `max_results` | unset (inherits search) | Max results to inject. When unset, inherits `[memory.search].max_results` (default `6`). |
+| `max_total_chars` | `1500` | Max cumulative snippet body characters across injected results (per-snippet still capped at 500). |
 
 ### Dream Settings (`[memory.dream]`)
 

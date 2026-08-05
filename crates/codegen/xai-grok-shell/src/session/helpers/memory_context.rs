@@ -11,6 +11,10 @@ use xai_grok_tools::types::memory_backend::{MemorySearchResult, format_staleness
 /// Maximum characters to include per snippet in the injection.
 const SNIPPET_MAX_CHARS: usize = 500;
 
+/// Default total snippet-body budget when callers do not pass config
+/// (matches [`xai_grok_config_types::MemoryInitialInjectionConfig`] default).
+pub const DEFAULT_INJECT_MAX_TOTAL_CHARS: usize = 1500;
+
 /// Returns `true` if a memory-context block is already persisted in the
 /// leading system message. Callers reuse a persisted block verbatim instead
 /// of re-searching: a re-scored block would mutate the system-prompt prefix
@@ -28,14 +32,22 @@ pub fn conversation_has_memory_context(items: &[ConversationItem]) -> bool {
 /// and the snippet in a fenced code block (preserving newlines/markdown).
 /// This matches the output format of the `memory_search` tool for consistency.
 ///
-/// Returns `None` if results are empty.
-pub fn format_memory_reminder(results: &[MemorySearchResult]) -> Option<String> {
+/// Stops adding results once cumulative snippet body characters reach
+/// `max_total_chars` (0 = no total budget, only per-snippet truncation).
+///
+/// Returns `None` if results are empty or the budget excludes every result.
+pub fn format_memory_reminder(
+    results: &[MemorySearchResult],
+    max_total_chars: usize,
+) -> Option<String> {
     if results.is_empty() {
         return None;
     }
 
     let mut section =
         format!("{MEMORY_CONTEXT_OPEN_TAG}\n## Relevant Memory from Past Sessions\n\n");
+    let mut used_chars = 0usize;
+    let mut included = 0usize;
 
     for (i, r) in results.iter().enumerate() {
         let truncated = r.snippet.chars().count() > SNIPPET_MAX_CHARS;
@@ -43,6 +55,17 @@ pub fn format_memory_reminder(results: &[MemorySearchResult]) -> Option<String> 
         if truncated {
             snippet.push_str("...");
         }
+        let snippet_chars = snippet.chars().count();
+        if max_total_chars > 0 && used_chars > 0 && used_chars + snippet_chars > max_total_chars {
+            break;
+        }
+        if max_total_chars > 0 && used_chars == 0 && snippet_chars > max_total_chars {
+            // Still include one truncated result so injection is never empty
+            // solely because a single hit exceeds the budget.
+            snippet = snippet.chars().take(max_total_chars).collect();
+            snippet.push_str("...");
+        }
+        let snippet_chars = snippet.chars().count();
         let staleness = format_staleness_note(&r.source, r.created_at);
         section.push_str(&format!(
             "### Result {} (score: {:.2}, source: {})\n\
@@ -57,6 +80,15 @@ pub fn format_memory_reminder(results: &[MemorySearchResult]) -> Option<String> 
             staleness,
             snippet,
         ));
+        used_chars = used_chars.saturating_add(snippet_chars);
+        included += 1;
+        if max_total_chars > 0 && used_chars >= max_total_chars {
+            break;
+        }
+    }
+
+    if included == 0 {
+        return None;
     }
 
     section.push_str(MEMORY_CONTEXT_CLOSE_TAG);
@@ -95,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_format_empty() {
-        assert_eq!(format_memory_reminder(&[]), None);
+        assert_eq!(format_memory_reminder(&[], DEFAULT_INJECT_MAX_TOTAL_CHARS), None);
     }
 
     #[test]
@@ -110,7 +142,7 @@ mod tests {
             source: "workspace".to_string(),
             created_at: None,
         }];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         assert!(output.contains("<memory-context>"));
         assert!(output.contains("### Result 1"));
         assert!(output.contains("score: 0.90"));
@@ -130,7 +162,7 @@ mod tests {
             source: "workspace".to_string(),
             created_at: None,
         }];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         assert!(
             output.contains("## Conventions\n\n- Use Rust\n- No clones"),
             "newlines in snippet should be preserved, not collapsed"
@@ -149,7 +181,7 @@ mod tests {
             source: "session".to_string(),
             created_at: None,
         }];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         // Snippet should be truncated to SNIPPET_MAX_CHARS (500) + "..."
         assert!(!output.contains(&"x".repeat(501)));
         assert!(output.contains(&format!("{}...", "x".repeat(500))));
@@ -179,11 +211,43 @@ mod tests {
                 created_at: None,
             },
         ];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         assert!(output.contains("### Result 1"));
         assert!(output.contains("### Result 2"));
         assert!(output.contains("score: 0.90"));
         assert!(output.contains("score: 0.70"));
+    }
+
+    #[test]
+    fn test_format_respects_total_char_budget() {
+        let results = vec![
+            MemorySearchResult {
+                chunk_id: "a:0".to_string(),
+                path: "a.md".to_string(),
+                start_line: 0,
+                end_line: 1,
+                score: 0.9,
+                snippet: "x".repeat(400),
+                source: "workspace".to_string(),
+                created_at: None,
+            },
+            MemorySearchResult {
+                chunk_id: "b:0".to_string(),
+                path: "b.md".to_string(),
+                start_line: 0,
+                end_line: 1,
+                score: 0.8,
+                snippet: "y".repeat(400),
+                source: "session".to_string(),
+                created_at: None,
+            },
+        ];
+        // Budget fits first snippet only (400 < 500, 400+400 > 500).
+        let output = format_memory_reminder(&results, 500).unwrap();
+        assert!(output.contains("### Result 1"));
+        assert!(!output.contains("### Result 2"));
+        assert!(output.contains("xxxx"));
+        assert!(!output.contains("yyyy"));
     }
 
     // -----------------------------------------------------------------------
@@ -205,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_detects_persisted_block_in_system_message() {
-        let block = format_memory_reminder(&[sample_result()]).unwrap();
+        let block = format_memory_reminder(&[sample_result()], DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         let system_content = format!("You are a helpful assistant.\n\n{block}");
         let conversation = vec![
             ConversationItem::system(system_content),
@@ -257,7 +321,7 @@ mod tests {
             source: "session".into(),
             created_at: Some(now - 86400 * 10),
         }];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         assert!(
             output.contains("**Stale ("),
             "10-day-old session result should show stale warning, got: {output}"
@@ -280,7 +344,7 @@ mod tests {
             source: "workspace".into(),
             created_at: Some(now - 86400 * 30),
         }];
-        let output = format_memory_reminder(&results).unwrap();
+        let output = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS).unwrap();
         assert!(
             !output.contains("**Stale (") && !output.contains("**Note ("),
             "workspace result must not show staleness, got: {output}"
@@ -324,7 +388,7 @@ mod tests {
     fn test_format_memory_reminder_empty_results_is_none() {
         use xai_grok_tools::types::memory_backend::MemorySearchResult;
         let results: Vec<MemorySearchResult> = vec![];
-        let reminder = format_memory_reminder(&results);
+        let reminder = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS);
         assert!(
             reminder.is_none(),
             "empty results must produce None — injection_count must NOT increment"
@@ -348,7 +412,7 @@ mod tests {
             source: "workspace".into(),
             created_at: None,
         }];
-        let reminder = format_memory_reminder(&results);
+        let reminder = format_memory_reminder(&results, DEFAULT_INJECT_MAX_TOTAL_CHARS);
         assert!(
             reminder.is_some(),
             "non-empty results must produce Some(_) — injection_count SHOULD increment"

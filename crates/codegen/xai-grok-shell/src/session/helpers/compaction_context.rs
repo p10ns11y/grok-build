@@ -229,7 +229,10 @@ fn to_system_reminder_inner(
 
     // Relevant memory from past sessions (post-compaction recovery; shell-only)
     if !memory_results.is_empty()
-        && let Some(reminder) = super::memory_context::format_memory_reminder(memory_results)
+        && let Some(reminder) = super::memory_context::format_memory_reminder(
+            memory_results,
+            super::memory_context::DEFAULT_INJECT_MAX_TOTAL_CHARS,
+        )
     {
         sections.push(reminder);
     }
