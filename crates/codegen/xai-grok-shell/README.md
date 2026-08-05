@@ -1360,7 +1360,7 @@ respect_gitignore = true               # filter gitignored files from tools (env
 
 [toolset.bash]
 timeout_secs = 120.0                   # command timeout in seconds
-output_byte_limit = 65536              # max output size (64KB)
+output_byte_limit = 8192               # max captured output in chars (default: 8192)
 
 [toolset.web_fetch]
 proxy_endpoint = "https://proxy.example.com"   # egress proxy URL (all requests routed through it)

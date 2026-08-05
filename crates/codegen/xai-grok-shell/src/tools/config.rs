@@ -58,9 +58,12 @@ impl BashToolConfig {
         // (overridable via config.toml). Foreground-only; background stays unbounded.
         let max_timeout_secs = self.max_timeout_secs.unwrap_or(PRODUCTION_MAX_TIMEOUT_SECS);
         map.insert("max_timeout_secs".into(), max_timeout_secs.into());
-        if let Some(limit) = self.output_byte_limit {
-            map.insert("output_byte_limit".into(), limit.into());
-        }
+        // Always emit so resources_state / Params show a non-null effective
+        // cap (PR3). TOML override wins; otherwise tools-crate default (8_192).
+        let output_byte_limit = self
+            .output_byte_limit
+            .unwrap_or(xai_grok_tools::DEFAULT_TOOL_OUTPUT_CHARS);
+        map.insert("output_byte_limit".into(), output_byte_limit.into());
         if let Some(ref p) = self.cmd_prefix {
             map.insert("cmd_prefix".into(), p.clone().into());
         }
@@ -737,6 +740,34 @@ mod tests {
         assert_eq!(
             fg_budget(&local.to_bash_params_json(None, None)),
             Some(30_000),
+        );
+    }
+
+    // -- output_byte_limit: production always emits a non-null cap (PR3) --
+
+    fn output_byte_limit(map: &serde_json::Map<String, serde_json::Value>) -> Option<u64> {
+        map.get("output_byte_limit").and_then(|v| v.as_u64())
+    }
+
+    #[test]
+    fn output_byte_limit_defaults_to_tool_const() {
+        let local = BashToolConfig::default();
+        assert_eq!(
+            output_byte_limit(&local.to_bash_params_json(None, None)),
+            Some(xai_grok_tools::DEFAULT_TOOL_OUTPUT_CHARS as u64),
+            "production must always emit DEFAULT_TOOL_OUTPUT_CHARS when unset"
+        );
+    }
+
+    #[test]
+    fn output_byte_limit_local_override_wins() {
+        let local = BashToolConfig {
+            output_byte_limit: Some(4_096),
+            ..BashToolConfig::default()
+        };
+        assert_eq!(
+            output_byte_limit(&local.to_bash_params_json(None, None)),
+            Some(4_096),
         );
     }
 }
