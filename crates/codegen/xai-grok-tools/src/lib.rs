@@ -7,8 +7,12 @@ pub use xai_grok_version::VERSION;
 pub const DEFAULT_TOOL_OUTPUT_BYTES: usize = 40_000;
 
 /// Default maximum output size (in characters) for bash/terminal tool results.
-/// 20 000 chars ≈ 5 000 tokens. Matches the common `SHELL_CHAR_HARD_LIMIT`.
-pub const DEFAULT_TOOL_OUTPUT_CHARS: usize = 20_000;
+///
+/// 8 192 chars ≈ 2 000 tokens. Tightened from 20k (PR3 tool-loop budget) so
+/// multi-bash sessions stop dominating Messages / `totalTokens`. Override via
+/// `[toolset.bash] output_byte_limit` or `BashParams.output_byte_limit`.
+/// Full output remains on the session terminal log when truncated (head+tail).
+pub const DEFAULT_TOOL_OUTPUT_CHARS: usize = 8_192;
 
 /// MCP inline tool-result cap (`MCP_MAX_OUTPUT_BYTES` and host/env helpers).
 pub use util::mcp_truncate::{

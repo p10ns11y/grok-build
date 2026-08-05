@@ -1278,7 +1278,8 @@ fn default_timeout_secs() -> f64 {
     120.0
 }
 fn default_output_byte_limit() -> usize {
-    200_000
+    // Align with production bash default (`DEFAULT_TOOL_OUTPUT_CHARS`).
+    xai_grok_tools::DEFAULT_TOOL_OUTPUT_CHARS
 }
 fn default_true() -> bool {
     true
