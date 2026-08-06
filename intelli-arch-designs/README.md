@@ -18,6 +18,7 @@
 | Note | Topic |
 |------|--------|
 | [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) | Learning cost: what we fixed, what burns money, what comes next (plain English + diagrams) |
+| [soft-call-budget-design.md](./soft-call-budget-design.md) | Soft tools/turn budget — design (HITL before product code) |
 
 ## Naming
 
