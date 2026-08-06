@@ -228,10 +228,12 @@ Do **not** stack five half-finished caps.
 
 **Soft call budget** — design first; ship only after human approval.
 
-Ideas to design (not implement until agreed):
+**Design note (2026-08-06):** [soft-call-budget-design.md](./soft-call-budget-design.md) — staged nudge@12 / soft-cap@20 / hard off; HITL four elements before any product code.
 
-- Soft max tools per user turn (warn or stop the storm).
-- Soft max shell calls per turn.
+Ideas locked in that note (not implement until agreed):
+
+- Soft max tools per user turn (warn then soft-cap the storm).
+- Shared pool; parallel tools count N.
 - Later: smarter file reads (offset/limit hygiene), if measures still show read size dominating.
 
 ```mermaid

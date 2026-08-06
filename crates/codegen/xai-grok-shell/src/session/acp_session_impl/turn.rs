@@ -1983,6 +1983,9 @@ impl SessionActor {
         let mut tool_turn_count: usize = 1;
         let mut loop_index: u32 = 0;
         let mut identical_tool_calls = IdenticalToolCallRun::default();
+        // Soft tools/user-turn budget (volume). Adjacent to stationarity (identity);
+        // not a shared TurnPolicyGate extract — keeps upstream turn.rs merges small.
+        let mut call_budget = SoftCallBudget::default();
         let mut todo_gate_fires: u32 = 0;
         let mut auth_retry_schedule = AuthRetrySchedule::new();
         let mut turn_span_totals = TurnSpanTotals::default();
@@ -2086,6 +2089,22 @@ impl SessionActor {
                     )
                     .await
                     .unwrap_or_else(|| ACTION_STATIONARITY_NUDGE_TEMPLATE.to_string());
+                self.push_system_reminder(&reminder);
+            }
+            if let Some(reminder) = call_budget.take_nudge_reminder() {
+                tracing::warn!(
+                    session_id = %self.session_info.id,
+                    tools_used = call_budget.tools_used,
+                    "call budget: nudging model after high tool count this user turn"
+                );
+                xai_grok_telemetry::unified_log::warn(
+                    "shell.turn.call_budget_nudge",
+                    Some(self.session_info.id.0.as_ref()),
+                    Some(serde_json::json!({
+                        "loop_index": loop_index,
+                        "tools_used": call_budget.tools_used,
+                    })),
+                );
                 self.push_system_reminder(&reminder);
             }
             self.drain_pending_interjections().await;
@@ -2657,6 +2676,42 @@ impl SessionActor {
                     },
                 );
             }
+            let batch_len = tool_calls.len() as u32;
+            if call_budget.at_soft_cap() {
+                tracing::warn!(
+                    session_id = %self.session_info.id,
+                    tools_used = call_budget.tools_used,
+                    soft_cap = call_budget.soft_cap,
+                    batch_len,
+                    "call budget: soft-cap rejecting tool batch"
+                );
+                xai_grok_telemetry::unified_log::warn(
+                    "shell.turn.call_budget_soft_cap",
+                    Some(self.session_info.id.0.as_ref()),
+                    Some(serde_json::json!({
+                        "loop_index": loop_index,
+                        "tools_used": call_budget.tools_used,
+                        "soft_cap": call_budget.soft_cap,
+                        "batch_len": batch_len,
+                    })),
+                );
+                let deny = call_budget.soft_cap_deny_message();
+                for tc in &tool_calls {
+                    self.chat_state_handle.push_tool_result(ConversationItem::tool_result(
+                        tc.id.as_ref().to_owned(),
+                        deny.clone(),
+                    ));
+                }
+                self.push_system_reminder(&call_budget.soft_cap_reminder());
+                let next_turn = tool_turn_count + 1;
+                if let Some(limit) = self.max_turns
+                    && next_turn > limit
+                {
+                    return Ok(TurnOutcome::MaxTurnsReached { limit });
+                }
+                tool_turn_count = next_turn;
+                continue;
+            }
             let tool_call_responses: Vec<ToolCallResponse> = tool_calls
                 .into_iter()
                 .map(|tc| ToolCallResponse {
@@ -2678,6 +2733,7 @@ impl SessionActor {
                     },
                 )
                 .await;
+            call_budget.record(batch_len);
             let execute_tool_calls_result = self.execute_tool_calls(tool_call_responses).await;
             match execute_tool_calls_result {
                 Ok(ToolLoop::PermissionReject { tool_name, reason }) => {
@@ -2734,6 +2790,73 @@ impl SessionActor {
         }
     }
 }
+/// Soft tools-per-user-turn budget (diverse storms). Grounded in tool-mix
+/// 2026-08-05: mean ~6, storm max 28–73. Hard stop is intentionally absent —
+/// stationarity owns identical thrash; see intelli-arch-designs/soft-call-budget-design.md.
+const SOFT_CALL_BUDGET_NUDGE: u32 = 12;
+const SOFT_CALL_BUDGET_CAP: u32 = 20;
+
+/// Counts tool invocations this user turn (each parallel tool_call = 1).
+struct SoftCallBudget {
+    tools_used: u32,
+    soft_nudge: u32,
+    soft_cap: u32,
+    nudged: bool,
+}
+
+impl Default for SoftCallBudget {
+    fn default() -> Self {
+        Self {
+            tools_used: 0,
+            soft_nudge: SOFT_CALL_BUDGET_NUDGE,
+            soft_cap: SOFT_CALL_BUDGET_CAP,
+            nudged: false,
+        }
+    }
+}
+
+impl SoftCallBudget {
+    fn record(&mut self, n: u32) {
+        self.tools_used = self.tools_used.saturating_add(n);
+    }
+
+    fn at_soft_cap(&self) -> bool {
+        self.soft_cap > 0 && self.tools_used >= self.soft_cap
+    }
+
+    /// Once per user turn when tools_used crosses the nudge threshold.
+    fn take_nudge_reminder(&mut self) -> Option<String> {
+        if self.soft_nudge == 0 || self.nudged || self.tools_used < self.soft_nudge {
+            return None;
+        }
+        self.nudged = true;
+        Some(format!(
+            "You have used {} tools this user turn (soft guidance at {}). \
+             Prefer synthesizing what you already have or asking the user — \
+             avoid another large tool fan-out. Further tools will be rejected \
+             after {} this turn.",
+            self.tools_used, self.soft_nudge, self.soft_cap
+        ))
+    }
+
+    fn soft_cap_deny_message(&self) -> String {
+        format!(
+            "Call budget soft-cap: this user turn has already used {} tools (cap {}). \
+             This tool was not executed. Give a final answer from what you have, \
+             or ask the user how to proceed.",
+            self.tools_used, self.soft_cap
+        )
+    }
+
+    fn soft_cap_reminder(&self) -> String {
+        format!(
+            "Call budget soft-cap reached ({}/{} tools this user turn). \
+             Do not call more tools this turn — answer the user or ask what to do next.",
+            self.tools_used, self.soft_cap
+        )
+    }
+}
+
 const MAX_CONSECUTIVE_IDENTICAL_TOOL_CALLS: u32 = 16;
 const NUDGE_AFTER_IDENTICAL_TOOL_CALLS: u32 = 8;
 const MAX_CONSECUTIVE_TRUE_NOOPS: u32 = 4;
@@ -2796,6 +2919,45 @@ impl IdenticalToolCallRun {
         }
     }
 }
+#[cfg(test)]
+mod soft_call_budget_tests {
+    use super::{SOFT_CALL_BUDGET_CAP, SOFT_CALL_BUDGET_NUDGE, SoftCallBudget};
+
+    #[test]
+    fn defaults_match_design() {
+        let b = SoftCallBudget::default();
+        assert_eq!(b.soft_nudge, SOFT_CALL_BUDGET_NUDGE);
+        assert_eq!(b.soft_cap, SOFT_CALL_BUDGET_CAP);
+        assert_eq!(b.tools_used, 0);
+    }
+
+    #[test]
+    fn parallel_batch_counts_n() {
+        let mut b = SoftCallBudget::default();
+        b.record(5);
+        b.record(5);
+        assert_eq!(b.tools_used, 10);
+        assert!(!b.at_soft_cap());
+    }
+
+    #[test]
+    fn soft_cap_at_threshold() {
+        let mut b = SoftCallBudget::default();
+        b.record(SOFT_CALL_BUDGET_CAP);
+        assert!(b.at_soft_cap());
+    }
+
+    #[test]
+    fn nudge_once_after_threshold() {
+        let mut b = SoftCallBudget::default();
+        b.record(SOFT_CALL_BUDGET_NUDGE - 1);
+        assert!(b.take_nudge_reminder().is_none());
+        b.record(1);
+        assert!(b.take_nudge_reminder().is_some());
+        assert!(b.take_nudge_reminder().is_none());
+    }
+}
+
 #[cfg(test)]
 mod identical_tool_call_run_tests {
     use super::{
