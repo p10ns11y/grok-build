@@ -20,6 +20,41 @@ The product we edit **is** the harness we run. Saving tokens here pays every ses
 
 ---
 
+## Scope: local learning loop only
+
+North star essay: [Focus — Make the learning loop more efficient](https://peramanathan-sathyamoorthy-cv.vercel.app/focus).
+
+That essay describes a virtuous cycle (measure → learn importance → reduce measurement → improve decisions). **This product line only runs the cycle locally** — on one operator’s machine, from session files already on disk.
+
+| Loop | Who | What “learn” means here | In scope? |
+|------|-----|-------------------------|-----------|
+| **Local learning loop** | You + this harness | Offline join of `chat_history.jsonl` / `tool_mix.json` → pick **one** policy lever → tighten → re-measure next sessions | **Yes — this is the roadmap** |
+| **Full-scale learning loop** | SpaceXAI (fleet / millions of users) | Cross-user importance ranking, shared KDIs, central policy that “learns which signals matter” at product scale | **No — out of scope** |
+
+We reuse the *shape* of the focus essay (observe cheaply → tighten → sparse improvement). We do **not** build the cloud/fleet half that only a provider with millions of sessions can run honestly.
+
+```mermaid
+flowchart LR
+  subgraph local [Local — our work]
+    O[Observe session files] --> D[Decide one lever]
+    D --> T[Tighten harness policy]
+    T --> R[Re-measure next session]
+    R --> O
+  end
+
+  subgraph fleet [Fleet — SpaceXAI only]
+    F[Aggregate millions of users]
+    F --> K[Rank KDIs / importance]
+    K --> P[Ship global policy]
+  end
+
+  local -.->|same principle, different owner| fleet
+```
+
+**Translation for agents:** when this note says “learn,” it means *local observe → one change → measure again*. It does **not** mean train an importance model, stand up a KDI store, or wait for fleet telemetry.
+
+---
+
 ## The problem in plain terms
 
 When you work with the agent, most of the bill is **not** the system prompt or the skill list.
@@ -73,10 +108,13 @@ flowchart TB
     READ[Maybe smaller file reads later]
   end
 
-  subgraph later [Later — only if measures demand it]
+  subgraph later [Later — only if local measures demand it]
     SKILL[Skill-list ceiling]
-    KDI[Smarter importance store]
     INJ[More inject polish]
+  end
+
+  subgraph never_here [Not this product line]
+    FLEET[Fleet KDI / importance store — SpaceXAI]
   end
 
   PR1 --> E0
@@ -87,7 +125,7 @@ flowchart TB
   RECIPE --> CALL
   CALL --> READ
   CALL -.-> SKILL
-  CALL -.-> KDI
+  CALL -.-> INJ
 ```
 
 ### Done in detail
@@ -182,9 +220,9 @@ flowchart LR
   R --> O
 ```
 
-Do **not** build a full “importance learning” system first.  
+Do **not** build a full “importance learning” / KDI store — that is the **fleet** half of the focus essay, owned by SpaceXAI at millions-of-users scale.  
 Do **not** stack five half-finished caps.  
-**Observe → one change → measure again.**
+**Local loop only: observe → one change → measure again.**
 
 ### Next step (not built yet)
 
@@ -227,7 +265,7 @@ flowchart TB
 | Re-run live 20k vs 8k A/B | Already decided; config miss made last A/B invalid |
 | Skill-list ceiling | Not hot in the tool mix data |
 | More inject polish | Inject is ≪5% of context |
-| Full ML / importance store | Offline join + session files are enough for now |
+| Full ML / importance store / fleet KDIs | Wrong owner and scale: SpaceXAI’s full learning loop, not a personal harness. Local offline join + session files are enough |
 | Clipboard debug panic fix | Real bug, separate track — do not block measure → tighten |
 
 ---
@@ -246,11 +284,12 @@ Do **not** nest a full second agent inside a live session to “measure” — i
 
 ## How to resume in one minute
 
-1. Read this file.  
+1. Read this file — especially **Scope: local learning loop only**.  
 2. Read the latest measure note if numbers matter:  
    `measurements/2026-08-05-tool-mix-observe.md`  
 3. Next work is **design a soft tools-per-turn (or shell-per-turn) budget** — write the design, get approval, then implement.  
-4. After any ship: run the tool-mix script on a new multi-tool session and compare to the table above.
+4. After any ship: run the tool-mix script on a new multi-tool session and compare to the table above.  
+5. Do **not** resume into fleet KDI / importance-store work — that is SpaceXAI scale, not this harness.
 
 ---
 
@@ -265,7 +304,7 @@ Do **not** nest a full second agent inside a live session to “measure” — i
 | Tool mix measure | `~/.grok/memory/grok-build-fd8a03ef/measurements/2026-08-05-tool-mix-observe.md` |
 | Script (hooks example) | [`../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py`](../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py) |
 | PR tool-mix recipe | https://github.com/p10ns11y/grok-build/pull/3 |
-| Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus |
+| Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus — principle only; we implement the **local** loop, not fleet learning |
 
 ---
 
@@ -275,8 +314,9 @@ Do **not** nest a full second agent inside a live session to “measure” — i
 |----------|--------|
 | What burns money? | Tool loops: many calls × large results × many rounds |
 | What did we fix? | Shell dump size (8 KB default); inject correctness; a repeatable measure recipe |
+| Which learning loop? | **Local only** (session files → one policy tighten → re-measure). Fleet/importance at SpaceXAI scale is out of scope |
 | Are we done? | No — call storms and large file reads remain |
 | What next? | Design a **soft call budget**; do not ship without approval |
-| What not to do? | Another bash-cap spin, skill-list project, or ML store “for later” |
+| What not to do? | Another bash-cap spin, skill-list project, or ML/KDI store pretending we are SpaceXAI |
 
-**We measure first. We change one thing. We measure again.**
+**We measure first. We change one thing. We measure again — locally.**
