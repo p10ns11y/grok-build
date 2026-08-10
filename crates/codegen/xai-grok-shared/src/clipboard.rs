@@ -1421,8 +1421,12 @@ mod platform {
         read_png: Option<&'static [&'static str]>,
     }
 
+    // `static` (not `const`): callers cache `&'static ToolSpec` and some paths
+    // used to dispatch via pointer identity. `const` promotions do not guarantee
+    // a single address across `&SPEC` sites, which made debug-only
+    // `std::ptr::eq` asserts panic on Linux PRIMARY reads (from-source debug builds).
     #[cfg(target_os = "linux")]
-    const WL_SPEC: ToolSpec = ToolSpec {
+    static WL_SPEC: ToolSpec = ToolSpec {
         name: "wl-copy",
         reads_wayland_selection: true,
         // `-t text`: exit non-zero on non-text clipboards instead of dumping
@@ -1436,7 +1440,7 @@ mod platform {
     };
 
     #[cfg(target_os = "linux")]
-    const XCLIP_SPEC: ToolSpec = ToolSpec {
+    static XCLIP_SPEC: ToolSpec = ToolSpec {
         name: "xclip",
         reads_wayland_selection: false,
         write_text: &["xclip", "-selection", "clipboard"],
@@ -1447,7 +1451,7 @@ mod platform {
     };
 
     #[cfg(target_os = "linux")]
-    const XSEL_SPEC: ToolSpec = ToolSpec {
+    static XSEL_SPEC: ToolSpec = ToolSpec {
         name: "xsel",
         reads_wayland_selection: false,
         write_text: &["xsel", "--clipboard", "--input"],
@@ -1710,11 +1714,14 @@ mod platform {
     fn x11_primary_tool_available(spec: &ToolSpec) -> bool {
         static XCLIP_DISCOVERED: std::sync::OnceLock<()> = std::sync::OnceLock::new();
         static XSEL_DISCOVERED: std::sync::OnceLock<()> = std::sync::OnceLock::new();
-        if std::ptr::eq(spec, &XCLIP_SPEC) {
-            cache_successful_probe(&XCLIP_DISCOVERED, || tool_available(&XCLIP_SPEC))
-        } else {
-            debug_assert!(std::ptr::eq(spec, &XSEL_SPEC));
-            cache_successful_probe(&XSEL_DISCOVERED, || tool_available(&XSEL_SPEC))
+        // Dispatch by tool name, not `std::ptr::eq` on `const`/`static` addresses.
+        // Pointer identity is unnecessary and was a debug-build panic footgun
+        // (`assertion failed: std::ptr::eq(spec, &XSEL_SPEC)` on PRIMARY read).
+        match spec.name {
+            "xclip" => cache_successful_probe(&XCLIP_DISCOVERED, || tool_available(&XCLIP_SPEC)),
+            "xsel" => cache_successful_probe(&XSEL_DISCOVERED, || tool_available(&XSEL_SPEC)),
+            // e.g. wl-copy has no X11 PRIMARY; never claim available / never panic.
+            _ => false,
         }
     }
 
@@ -2452,6 +2459,34 @@ mod platform {
             assert!(!primary_arboard_fallback_allowed(true, true));
             assert!(!primary_arboard_fallback_allowed(false, false));
             assert!(!primary_arboard_fallback_allowed(false, true));
+        }
+
+        /// Regression: PRIMARY availability must not panic on any known ToolSpec
+        /// (debug builds used to `debug_assert` pointer identity against XSEL).
+        #[test]
+        fn x11_primary_tool_available_accepts_x11_specs_and_rejects_wayland() {
+            // Must not panic; wl-copy is not an X11 PRIMARY backend.
+            assert!(!x11_primary_tool_available(&WL_SPEC));
+            // Availability still depends on PATH; we only assert the dispatch is safe.
+            let _ = x11_primary_tool_available(&XCLIP_SPEC);
+            let _ = x11_primary_tool_available(&XSEL_SPEC);
+        }
+
+        #[test]
+        fn x11_primary_tool_available_matches_by_name_not_pointer() {
+            // Stack-local copy: pointer identity with the static would fail.
+            let xclip_copy = ToolSpec {
+                name: "xclip",
+                reads_wayland_selection: false,
+                write_text: XCLIP_SPEC.write_text,
+                read_text: XCLIP_SPEC.read_text,
+                read_primary: XCLIP_SPEC.read_primary,
+                write_png: XCLIP_SPEC.write_png,
+                read_png: XCLIP_SPEC.read_png,
+            };
+            assert!(!std::ptr::eq(&xclip_copy, &XCLIP_SPEC));
+            // Same name → same discovery path (must not panic / fall into "xsel only").
+            let _ = x11_primary_tool_available(&xclip_copy);
         }
 
         #[test]
