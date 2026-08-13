@@ -84,8 +84,8 @@ The binary artifact is named `xai-grok-pager`; official installs ship it as
 [authentication guide](crates/codegen/xai-grok-pager/docs/user-guide/02-authentication.md).
 
 For CPU caps (`-j` / `CARGO_BUILD_JOBS`), `release` vs `release-dist`, and
-installing a local binary onto `PATH` as `grok`, see
-[`LOCAL-RELEASE.md`](LOCAL-RELEASE.md).
+installing a local binary onto `PATH` as `local-grok` (never over official
+`grok`), see [`LOCAL-RELEASE.md`](LOCAL-RELEASE.md).
 
 ## Documentation
 
