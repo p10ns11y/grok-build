@@ -102,9 +102,9 @@ Fantasy demo tells: vertical video, “save this,” three arrows into Temporal/
 
 Grok Build already **is** the three-layer machine. The feed is a **relabel**.
 
-- Missing capability → harness (permissions, 8192, `AGENTS.md`).  
+- Missing capability → harness (permissions, 8192, `AGENTS.md`). Live check: `grok-host-prep`.  
 - Unreliable completion → loop (stationarity, soft-cap). Official `grok` does not have this-fork soft-cap — do not pretend it does.  
-- Uncontrolled branching → graph **skills** (plan / EVA / workflow) when emptiness is high — not every user turn.
+- Uncontrolled branching → graph **skills** (plan / EVA / workflow) when emptiness is high — not every user turn. Live router: `control-feeder` → Card / EVA / light. See [control-overlay-and-host-prep.md](./control-overlay-and-host-prep.md).
 
 **Discipline first:** official `grok` to ship; `tool-mix-observe` on the right `GROK_HOME`; freeze new layers until a join changes the table. Open `grok-local` only to falsify an **in-tree** claim (today: soft-call binds at 20). That is the opposite of the feed’s “add a graph.”
 

@@ -22,6 +22,7 @@
 | [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) | Operator loop: unit of account, `grok` vs `grok-local`, freeze |
 | [author-vs-inceptor.md](./author-vs-inceptor.md) | Author 8 / inceptor 6; vs X Times Square feed (engineering) |
 | [next-deep-focus.md](./next-deep-focus.md) | Next deep bet: measure EVA vs skip (GDP), not a new graph |
+| [control-overlay-and-host-prep.md](./control-overlay-and-host-prep.md) | Shipped overlay: control-feeder + grok-host-prep + why / impact |
 | [soft-call-budget-design.md](./soft-call-budget-design.md) | Soft tools/turn budget — design (HITL before product code) |
 
 ## Naming

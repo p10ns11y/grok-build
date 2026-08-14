@@ -30,7 +30,7 @@ If greppable EVA wins, the skip gate is wrong. If blank-sheet EVA loses, the tri
 | LangGraph / thicker control-graph runtime | Host loop already exists (`turn.rs`). You are not the inceptor of this OS. |
 | Soft-call retune / `max_lines_read` | Join already disproved the read default; soft-cap is in tree. Freeze. |
 | Multi-model prior triad | Second-order. First see if *one* model EVA beats skip. |
-| More north-star skills | Fewer invariants. Measure the one you have. |
+| More north-star skills | Fewer invariants. Measure the one you have. Overlay already ships: [control-overlay-and-host-prep.md](./control-overlay-and-host-prep.md) (feeder = skip/EVA router; host-prep = harness). |
 
 Deep ≠ wide. Official `grok` ships product. `grok-local` only falsifies an in-tree claim (today: soft-call @20). This eval is **procedure**, not pager code.
 
