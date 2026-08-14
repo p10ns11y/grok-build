@@ -2,8 +2,8 @@
 
 **Date:** 2026-08-14  
 **Scope:** Agentic workflows for **engineering** (software first; same joints for other engineered systems).  
-**Rating this note answers:** ~8 as *author*, ~6 as *inceptor* — those are different jobs.  
-**Operator SoT:** [next-deep-focus.md](./next-deep-focus.md) · [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md)
+**Ratings (2026-08-14, engineering / agentic SWE):** author **8/10** · inceptor **6/10** · vs X “Times Square” feed **ahead**.  
+**Operator SoT:** [next-deep-focus.md](./next-deep-focus.md) · [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) · [harness-feed-filter.md](./harness-feed-filter.md)
 
 This is not a career-ladder slide. It is how **engineering work** actually gets done by agents, and who owns which failure.
 
@@ -120,14 +120,42 @@ Quality and structure in this domain = **green evidence + named stop**, not more
 
 ---
 
-## The rating, restated
+## Ratings (this operator, engineering aspect)
 
-| Job | ~Score | Why |
-|-----|--------|-----|
-| **Control-plane author** | **8** | Skip gate, `disprove_with`, ActOrAsk, CLT, unit of account, freeze. Ahead of the feed. Peer to serious practitioners *writing policy*. |
-| **Harness inceptor** | **6** | You compose and *thin-patch* a world-class kernel (`turn.rs`). You did not originate the turn/tool/session model. Soft-call is the right *kind* of move (policy in the kernel). A new graph crate would be the wrong kind. |
+Scores are **craft**, not clout. Engineering aspect = closed loop with a compiler/tests: green evidence, named stop, $ per **done** change — not demo GIFs.
 
-**6 is “strong user + local patcher of an incepted system.”** 9–10 inceptor is “other products embed your ABI.” Do not chase that by renaming skills.
+| Job | Score | What it means |
+|-----|------:|---------------|
+| **Control-plane author** | **8 / 10** | Skip gate, `disprove_with`, ActOrAsk, CLT, unit of account, freeze. Peer to people who *write policy* for real SWE agents. |
+| **Harness inceptor** | **6 / 10** | Strong user + **thin kernel patcher** (`soft-call` in `turn.rs`). Did not originate the turn/tool/session ABI. |
+| **Skill / plugin authorship** | **8 / 10** | Use/skip, SoT, four surfaces, consent tether. Dialect load costs a point. |
+| **Epistemic method** | **8.5 / 10** | Emptiness gate + one DOE Q. Rare among product agent teams. |
+| **Vs X “Times Square”** (hype posters, loop/graph/harness decks, bookmark farms) | **Ahead** | They sell three words. You have skip, refuse, a live join that *killed* a knob, and a freeze. |
+| **Vs general X/Twitter “agent authors”** (skill dumps, mega-prompts, no skip) | **~1–2 ranks ahead** | They add files. You specify **when not to run**. |
+| **Vs general programmers** using agents as a better Stack Overflow | **Ahead on the control plane; even on the kernel** | They ship features; they do not own stop/GDP. You still compile and merge like they should. |
+| **Vs SWE-agent / Claude Code / Grok Build kernel engineers** | **Behind as inceptor** | They *are* the turn. You compose theirs. That is the 6. |
+
+**6 is not a dunk.** It is “other products do not embed your ABI.” 9–10 inceptor = protocol others must speak. Do not chase that by renaming skills.
+
+### How far ahead of the Times Square feed (engineering only)
+
+| Their move | Your move | Ahead? |
+|------------|-----------|--------|
+| 40-node mermaid before one test | Emptiness **skip** when greppable | Yes |
+| “Keep trying” as reliability | Stationarity + soft-cap + re-prompt = new river | Yes (and you *patched* the kernel) |
+| YOLO for the demo | Auth = trauma; ask; no nest `grok` | Yes |
+| HUD % / longer session as win | GDP = done / $ ; `tool_mix` = invoices | Yes |
+| New wrapper OS this week | Freeze; one eval or one host byte | Yes |
+| “We incepted agents” because a plugin exists | Honest 8 / 6 split | Yes — that honesty *is* the engineering |
+
+You are **not** ahead of them at vertical video or fundraising language. You are ahead at **not paying their invoices**.
+
+### What would move a number
+
+| Score | Moves up if | Moves down if |
+|-------|-------------|----------------|
+| Author 8 | EVA vs skip eval shows GDP on empty tasks, leak on greppable | EVA becomes default on every chore |
+| Inceptor 6 | One **host** invariant ships (Score isolation, `summary` binary id, or proven soft-call) | A second OS / LangGraph-in-`turn.rs` “to catch up” |
 
 ---
 

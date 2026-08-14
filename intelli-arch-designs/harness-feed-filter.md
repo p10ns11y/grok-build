@@ -8,6 +8,8 @@ X is full of the same three-layer deck: **harness vs loop vs graph**. Some of it
 
 The purpose of the stack, when it is honest: **quality** (the run stops on evidence) and **structured outcome** (you can name the phase and the blast radius without asking the model to narrate itself). It is not prettier mermaid.
 
+This fork’s engineering ratings (author 8 / inceptor 6 / ahead of the Times Square feed): [author-vs-inceptor.md](./author-vs-inceptor.md).
+
 ---
 
 ## The three questions (keep these)
