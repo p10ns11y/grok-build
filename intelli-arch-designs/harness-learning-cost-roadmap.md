@@ -367,7 +367,8 @@ Do **not** stack five half-finished caps.
 
 **Not done:** live dogfood on a **from-source** process that actually loaded that code. Official `grok` will **not** show the gate.
 
-**Operator plan (2026-08-14):** **Freeze new levers.** Implement in **official `grok`**. Use `grok-local` only to falsify one in-tree claim (split home). Do not nest `-p`.
+**Operator plan (2026-08-14):** **Freeze new levers.** Implement in **official `grok`**. Use `grok-local` only to falsify one in-tree claim (split home). Do not nest `-p`.  
+**Deep focus (not a lever):** measure EVA vs skip — [next-deep-focus.md](./next-deep-focus.md).
 
 After a week of official joins: if `read_file` still dominates **and** omit-limit p95 lines ≥800, then design a read default — HITL before code. Otherwise stay frozen.
 
@@ -443,6 +444,7 @@ Do **not** nest a full second agent or `grok -p` inside a live session to “mea
 | PR tool-mix recipe | https://github.com/p10ns11y/grok-build/pull/3 |
 | Economy → harness (separate note) | [harness-economy-model.md](./harness-economy-model.md) |
 | Filter X harness/loop/graph feeds | [harness-feed-filter.md](./harness-feed-filter.md) |
+| Next deep focus | [next-deep-focus.md](./next-deep-focus.md) |
 | Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus — principle only; we implement the **local** loop, not fleet learning |
 
 ---

@@ -106,6 +106,8 @@ How to **filter** harness / loop / graph feeds (what to take, what wastes $):
 [`intelli-arch-designs/harness-feed-filter.md`](intelli-arch-designs/harness-feed-filter.md).
 The operator loop (measure, official `grok` vs `grok-local`, freeze) is
 [`intelli-arch-designs/harness-learning-cost-roadmap.md`](intelli-arch-designs/harness-learning-cost-roadmap.md).
+Next deep focus (measure EVA vs skip, not a new graph):
+[`intelli-arch-designs/next-deep-focus.md`](intelli-arch-designs/next-deep-focus.md).
 Index: [`intelli-arch-designs/README.md`](intelli-arch-designs/README.md).
 
 ## Repository layout
