@@ -4,7 +4,7 @@
 **Status:** one deep bet; harness product **frozen**  
 **Not:** a new graph engine, bash cap, `turn.rs` lever, or X-deck clone
 
-Authorship is already ahead of the feed (emptiness gate, `disprove_with`, ActOrAsk). The gap vs people who **incept** agentic systems is not more ontology. It is **whether EVA earns GDP**.
+Authorship is already ahead of the feed (emptiness gate, `disprove_with`, ActOrAsk). The gap vs people who **incept** agentic systems is not more ontology. It is **whether EVA earns GDP** (Track A) or **one host invariant** (Track B). Roles: [author-vs-inceptor.md](./author-vs-inceptor.md).
 
 ---
 

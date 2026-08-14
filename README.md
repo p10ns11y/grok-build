@@ -108,6 +108,8 @@ The operator loop (measure, official `grok` vs `grok-local`, freeze) is
 [`intelli-arch-designs/harness-learning-cost-roadmap.md`](intelli-arch-designs/harness-learning-cost-roadmap.md).
 Next deep focus (measure EVA vs skip, not a new graph):
 [`intelli-arch-designs/next-deep-focus.md`](intelli-arch-designs/next-deep-focus.md).
+Author vs inceptor (who owns the kernel vs the policy):
+[`intelli-arch-designs/author-vs-inceptor.md`](intelli-arch-designs/author-vs-inceptor.md).
 Index: [`intelli-arch-designs/README.md`](intelli-arch-designs/README.md).
 
 ## Repository layout

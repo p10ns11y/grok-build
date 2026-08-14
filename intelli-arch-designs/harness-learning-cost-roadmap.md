@@ -445,6 +445,7 @@ Do **not** nest a full second agent or `grok -p` inside a live session to “mea
 | Economy → harness (separate note) | [harness-economy-model.md](./harness-economy-model.md) |
 | Filter X harness/loop/graph feeds | [harness-feed-filter.md](./harness-feed-filter.md) |
 | Next deep focus | [next-deep-focus.md](./next-deep-focus.md) |
+| Author vs inceptor | [author-vs-inceptor.md](./author-vs-inceptor.md) |
 | Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus — principle only; we implement the **local** loop, not fleet learning |
 
 ---
