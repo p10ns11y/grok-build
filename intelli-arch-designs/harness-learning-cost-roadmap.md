@@ -442,6 +442,7 @@ Do **not** nest a full second agent or `grok -p` inside a live session to “mea
 | Script (hooks example) | [`../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py`](../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py) |
 | PR tool-mix recipe | https://github.com/p10ns11y/grok-build/pull/3 |
 | Economy → harness (separate note) | [harness-economy-model.md](./harness-economy-model.md) |
+| Filter X harness/loop/graph feeds | [harness-feed-filter.md](./harness-feed-filter.md) |
 | Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus — principle only; we implement the **local** loop, not fleet learning |
 
 ---

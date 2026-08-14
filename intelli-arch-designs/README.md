@@ -18,6 +18,7 @@
 | Note | Topic |
 |------|--------|
 | [harness-economy-model.md](./harness-economy-model.md) | World economy → harness: what we keep, what we do not buy |
+| [harness-feed-filter.md](./harness-feed-filter.md) | Filter X harness/loop/graph posts: what to take, what wastes $ |
 | [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) | Operator loop: unit of account, `grok` vs `grok-local`, freeze |
 | [soft-call-budget-design.md](./soft-call-budget-design.md) | Soft tools/turn budget — design (HITL before product code) |
 

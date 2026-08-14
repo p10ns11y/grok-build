@@ -64,4 +64,5 @@ Nuance: a coding session has **one buyer** (you) and **one firm** (this turn). T
 
 The model already paid for itself if it stops a **wrong lever** (skill-list, inject polish, bash &lt;8192) and keeps **official `grok`** as the editor. It does not justify a new economy crate.
 
-Operator loop, freeze, `grok` vs `grok-local`: [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md).
+Operator loop, freeze, `grok` vs `grok-local`: [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md).  
+Filter X harness/loop/graph posts: [harness-feed-filter.md](./harness-feed-filter.md).

@@ -101,6 +101,8 @@ MCP servers, skills, plugins, hooks, headless mode, sandboxing, and more.
 This fork treats the **world economy as a model for the harness** (flow vs
 sticker vs lake; invoices vs value-added) — see
 [`intelli-arch-designs/harness-economy-model.md`](intelli-arch-designs/harness-economy-model.md).
+How to **filter** harness / loop / graph feeds (what to take, what wastes $):
+[`intelli-arch-designs/harness-feed-filter.md`](intelli-arch-designs/harness-feed-filter.md).
 The operator loop (measure, official `grok` vs `grok-local`, freeze) is
 [`intelli-arch-designs/harness-learning-cost-roadmap.md`](intelli-arch-designs/harness-learning-cost-roadmap.md).
 Index: [`intelli-arch-designs/README.md`](intelli-arch-designs/README.md).
