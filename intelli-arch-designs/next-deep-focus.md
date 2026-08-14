@@ -4,7 +4,7 @@
 **Status:** one deep bet; harness product **frozen**  
 **Not:** a new graph engine, bash cap, `turn.rs` lever, or X-deck clone
 
-Authorship is already ahead of the feed (emptiness gate, `disprove_with`, ActOrAsk). Ratings: author **8**, inceptor **6**, **ahead** of X Times Square decks — [author-vs-inceptor.md](./author-vs-inceptor.md). The gap vs inceptors is not more ontology. It is **whether EVA earns GDP** (Track A) or **one host invariant** (Track B).
+Authorship is already ahead of the feed (emptiness gate, `disprove_with`, ActOrAsk). Ratings: author **8**, inceptor **6**, **ahead** of X Times Square decks — [author-vs-inceptor.md](./author-vs-inceptor.md). One person cannot compete on a full harness. **Complement** inceptors (skip / GDP / measured method / one kernel byte), do not clone `turn.rs`. The gap is **whether EVA earns GDP** (Track A) or **one host invariant** (Track B).
 
 ---
 

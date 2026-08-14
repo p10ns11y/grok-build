@@ -159,6 +159,55 @@ You are **not** ahead of them at vertical video or fundraising language. You are
 
 ---
 
+## How to complement inceptors (one person cannot compete on the full harness)
+
+A solo operator **cannot** match xAI / Anthropic / Cursor at turn kernels, model routing, sandbox fleets, and updater surface. Trying is a second OS. That is how you lose years and still sit at inceptor 4.
+
+**Complement** = be the half they systematically under-build, at a **level they must take seriously**. Same altitude, different surface. They own the *machine*. You own *when the machine should run, stop, and count*.
+
+Inceptors are strong at bytes, fds, tools, traces. They are weak at:
+
+| Their gap | Your complement (already started) |
+|-----------|-----------------------------------|
+| Always-on ReAct (“the loop *is* the product”) | **Skip** when greppable (emptiness gate) |
+| HUD / tokens as success | **GDP** = done / $ ; invoices vs sticker |
+| Eval of *models*, not of *methods* | EVA vs skip on engineering tasks |
+| YOLO or “user will notice” | Auth = trauma; Ask; no nest |
+| One context plans, codes, and grades itself | Score ⊥ implementer (recipe, then host) |
+| Topology slides | `disprove_with` + one live join |
+
+That is how a one-person shop **matches their level** without matching their headcount.
+
+### Complement, not copy
+
+| Do | Do not |
+|----|--------|
+| Thin **patches inside their kernel** (soft-call next to stationarity) | Fork a pager and call it a harness |
+| One **portable card** they could embed (`disprove_with`, `tool_mix.v1`, skip rule) | Forty-node graph “because they have a graph” |
+| Publish **one measured method** (EVA vs skip, $ per done PR) | Another skill dialect they will not load |
+| Ride **official `grok`**; lab only to falsify an in-tree claim | Rebuild the OS so you “own” the turn |
+| Speak **their** ABI (sessions, hooks, permissions) | Invent a parallel ABI |
+
+**Match** = they would *cite or merge* your stop/skip/GDP. **Compete** = you reimplement `turn.rs`. Only the first is available to one person.
+
+### Engineering shape (how it looks day to day)
+
+```text
+their kernel:  propose → tools → world (test) → trace → stop bits
+your layer:    skip? → one lever → Ask? → count done/$ → refuse the next cap
+```
+
+You already live on the best kernel you can get (Grok Build). Complement is **policy + one byte in that kernel**, not a new machine.
+
+### What “peer to inceptors” looks like in 12 months (honest)
+
+- A published EVA vs skip table other harness people can rerun.  
+- `tool_mix.v1` (or skip/`disprove_with`) copied or linked *outside* this fork.  
+- At most **one** upstream-friendly kernel patch merged or clearly portable.  
+- No second OS. Author 8 earned or cut. Inceptor stays ~6 unless that one patch is *the* stop others reuse.
+
+---
+
 ## What to focus next (this frame)
 
 Pick **one** track. Do not do both in the same week.
