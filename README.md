@@ -20,6 +20,7 @@ Protocol (ACP).
 [Building from source](#building-from-source) ·
 [Local release](LOCAL-RELEASE.md) ·
 [Harness cost / economic model](intelli-arch-designs/harness-economy-model.md) ·
+[Filter harness/loop/graph feeds](intelli-arch-designs/harness-feed-filter.md) ·
 [Documentation](#documentation) ·
 [Repository layout](#repository-layout) ·
 [Development](#development) ·
@@ -119,7 +120,7 @@ Index: [`intelli-arch-designs/README.md`](intelli-arch-designs/README.md).
 | `crates/codegen/...` | The rest of the CLI crate closure (config, MCP, markdown, sandbox, ...) |
 | `crates/common/`, `crates/build/`, `prod/mc/` | Small shared leaf crates pulled in by the closure |
 | `third_party/` | Vendored upstream source (Mermaid diagram stack) — see below |
-| `intelli-arch-designs/` | Product-line notes (economy→harness model, cost roadmap, soft-call) — not the user guide |
+| `intelli-arch-designs/` | Product-line notes (economy model, feed filter, cost roadmap, soft-call) — not the user guide |
 
 > [!IMPORTANT]
 > The root `Cargo.toml` (workspace members, dependency versions, lints,
