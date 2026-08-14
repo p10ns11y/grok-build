@@ -17,7 +17,7 @@
 
 | Note | Topic |
 |------|--------|
-| [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) | Learning cost: what we fixed, what burns money, what comes next (plain English + diagrams) |
+| [harness-learning-cost-roadmap.md](./harness-learning-cost-roadmap.md) | Learning cost: unit of account, `grok` vs `grok-local`, freeze |
 | [soft-call-budget-design.md](./soft-call-budget-design.md) | Soft tools/turn budget — design (HITL before product code) |
 
 ## Naming
