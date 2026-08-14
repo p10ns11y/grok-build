@@ -19,6 +19,7 @@ Protocol (ACP).
 [Installing the released binary](#installing-the-released-binary) ·
 [Building from source](#building-from-source) ·
 [Local release](LOCAL-RELEASE.md) ·
+[Harness cost / economic model](intelli-arch-designs/harness-economy-model.md) ·
 [Documentation](#documentation) ·
 [Repository layout](#repository-layout) ·
 [Development](#development) ·
@@ -97,6 +98,13 @@ The user guide ships with the pager crate:
 — getting started, keyboard shortcuts, slash commands, configuration, theming,
 MCP servers, skills, plugins, hooks, headless mode, sandboxing, and more.
 
+This fork treats the **world economy as a model for the harness** (flow vs
+sticker vs lake; invoices vs value-added) — see
+[`intelli-arch-designs/harness-economy-model.md`](intelli-arch-designs/harness-economy-model.md).
+The operator loop (measure, official `grok` vs `grok-local`, freeze) is
+[`intelli-arch-designs/harness-learning-cost-roadmap.md`](intelli-arch-designs/harness-learning-cost-roadmap.md).
+Index: [`intelli-arch-designs/README.md`](intelli-arch-designs/README.md).
+
 ## Repository layout
 
 | Path | Contents |
@@ -109,6 +117,7 @@ MCP servers, skills, plugins, hooks, headless mode, sandboxing, and more.
 | `crates/codegen/...` | The rest of the CLI crate closure (config, MCP, markdown, sandbox, ...) |
 | `crates/common/`, `crates/build/`, `prod/mc/` | Small shared leaf crates pulled in by the closure |
 | `third_party/` | Vendored upstream source (Mermaid diagram stack) — see below |
+| `intelli-arch-designs/` | Product-line notes (economy→harness model, cost roadmap, soft-call) — not the user guide |
 
 > [!IMPORTANT]
 > The root `Cargo.toml` (workspace members, dependency versions, lints,

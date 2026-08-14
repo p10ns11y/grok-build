@@ -85,20 +85,14 @@ flowchart LR
 
 ### Unit of account (do not mix these)
 
-Borrowed from [economy-first-principles](file:///home/sustainableabundance/life-os/Resources/economy-first-principles.md): **spending is the metabolism; wealth is title; market cap is the sticker.** Do not add the lakes.
+Mapping and “what we do not buy”: **[harness-economy-model.md](./harness-economy-model.md)**. Spending is the metabolism; HUD % is the sticker. Do not add the lakes.
 
 | Name | What it is here | Optimize? |
 |------|-----------------|-----------|
 | **GDP / river** | Useful output per dollar (task done, PR shipped, **no extra re-prompt**) | **Yes — this is the unit of account** |
-| **FX / invoices** | `tool_mix`: calls × result chars × rounds. Same text billed again next model call | Watch. Tax hops. Not the goal. |
-| **Market cap / sticker** | HUD context %, `signals.json` `contextTokensUsed` / `contextWindowUsage` | Thermometer only |
-| **Stock / lake** | Memory, skills, session files, policy knobs, full bash logs on disk | Compound; do **not** restuff into the model |
-
-**Do not add** inject + skills + tools as three separate “cost piles.” They share one window (household wealth already includes the equity). E0: inject ≪5%, skills ~2%; tools dominate.
-
-**Value-added vs invoices:** GDP counts leftovers once. A 16 kB `read_file` that is never used is an invoice, not output. After a result is consumed, the next prompt should keep the **decision**, not re-bill the dump.
-
-**Jevons:** cheaper / faster models → *more* tool storms unless hop count is taxed. Soft-call stays even when inference “feels cheap.”
+| **FX / invoices** | `tool_mix`: calls × result chars × rounds | Watch. Tax hops. Not the goal. |
+| **Market cap / sticker** | HUD context %, `signals.json` `contextTokensUsed` | Thermometer only |
+| **Stock / lake** | Memory, skills, session files, policy knobs, logs on disk | Compound; do **not** restuff into the model |
 
 ---
 
@@ -447,6 +441,7 @@ Do **not** nest a full second agent or `grok -p` inside a live session to “mea
 | Tool mix measure | `~/.grok/memory/grok-build-fd8a03ef/measurements/2026-08-05-tool-mix-observe.md` |
 | Script (hooks example) | [`../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py`](../crates/codegen/xai-grok-hooks/examples/hooks/bin/tool-mix-observe.py) |
 | PR tool-mix recipe | https://github.com/p10ns11y/grok-build/pull/3 |
+| Economy → harness (separate note) | [harness-economy-model.md](./harness-economy-model.md) |
 | Focus essay (north star) | https://peramanathan-sathyamoorthy-cv.vercel.app/focus — principle only; we implement the **local** loop, not fleet learning |
 
 ---
