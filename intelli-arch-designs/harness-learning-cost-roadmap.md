@@ -284,8 +284,10 @@ Same default `~/.grok` mixes both TUIs into one session lake (`sessions/`, `acti
 
 | Process | Home | Binary |
 |---------|------|--------|
-| Official implementer | unset → `~/.grok` | `~/.grok/bin/grok` (`grok --version` → **1.0.3**) |
-| Local treatment | `GROK_HOME=~/.grok-local` | `target/debug/xai-grok-pager` (**1.0.1** + product patches) |
+| Official implementer | unset → `~/.grok` | `~/.grok/bin/grok` (`grok --version` → **1.0.3** + stock hash) |
+| Local treatment | `GROK_HOME=~/.grok-local` | `target/debug/xai-grok-pager` (**1.0.3** + this fork’s git hash + product patches) |
+
+Both report the same **package** version after rebase onto the 1.0.3 monorepo sync. Do **not** use `1.0.3` vs `1.0.1` to tell them apart. A stale `target/debug` built *before* that rebase can still print `1.0.1` until you rebuild — that is the binary, not the tree.
 
 `~/.grok-local` shares **auth.json**, **config.toml**, **memory** (symlinks). It does **not** share `sessions/`, `bin/`, `downloads/`, or `active_sessions.json`.
 
@@ -300,7 +302,7 @@ GROK_HOME=~/.grok-local python3 ~/.grok/hooks/bin/tool-mix-observe.py \
   --workspace-dir ~/.grok-local/sessions/$WS --pick-largest 1
 ```
 
-Tell them apart live: `readlink -f /proc/<pid>/exe` (stock download vs `xai-grok-pager`). Soft-cap messages exist only on local.
+Tell them apart live: `readlink -f /proc/<pid>/exe` (stock download vs `xai-grok-pager`), `GROK_HOME`, and the **git hash** in `--version` — not the `1.0.3` label. Soft-cap messages exist only on local.
 
 **Implement in official grok; measure the gate on from-source.** Stock CLI is the stable editor. Soft-call proof is a **different process** after a rebuild, never mid-session. Never nest either binary inside the other.
 
@@ -310,7 +312,7 @@ Tell them apart live: `readlink -f /proc/<pid>/exe` (stock download vs `xai-grok
 
 Use `grok-local` only if one of these is true:
 
-1. The bug or gate exists **only in this tree** (soft-call 12/20, a `local` patch, a pager crash 1.0.3 cannot show).
+1. The bug or gate exists **only in this tree** (soft-call 12/20, a `local` patch, a pager crash official cannot show).
 2. You are **proving one already-shipped knob** — external `grok-local -p` into `~/.grok-local`, then `tool-mix-observe`. One prompt, then quit.
 3. Official cannot do the job **and** you can name the missing code path in one sentence.
 
