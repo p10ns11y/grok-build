@@ -7,3 +7,4 @@ Unit of account: useful work / $ (done, no extra re-prompt). `tool_mix` = invoic
 3. One lever. Official grok has no soft-cap: stop and ask if this user turn needs >12 tools. Do not spawn a crowd then poll.
 4. Do not run `grok` / `grok -p` / nested agents from a live session. Measure: `tool-mix-observe.py`. Official lake `~/.grok`; local pager `GROK_HOME=~/.grok-local`.
 5. Keep this file tiny — it is re-injected every turn. Do not lower bash below 8192. No TurnPolicyGate, no fleet KDI.
+6. Operator compass `~/life-os/Meta/north-star.md`: finance-now, SpaceXAI by compounding. End with `Next on path:` one step. No PII.
