@@ -6,7 +6,7 @@
 
 The world economy is a **great model** for a coding harness *when we keep the joints* (flow vs stock vs sticker, invoices vs value-added, Jevons). It is **not** a schema to buy whole: no central bank, no fleet KDI, no “market cap” dashboard as the goal.
 
-Private literacy source (operator disk, not in this repo): `~/life-os/Resources/economy-first-principles.md`. Do not paste household or ledger facts here.
+Literacy source (public [life-os](https://github.com/p10ns11y/life-os), not in this repo): [Resources/economy-first-principles.md](https://github.com/p10ns11y/life-os/blob/master/Resources/economy-first-principles.md). Do not paste household or ledger facts here.
 
 ---
 

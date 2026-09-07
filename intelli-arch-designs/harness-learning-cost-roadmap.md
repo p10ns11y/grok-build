@@ -232,7 +232,8 @@ Optional: SessionEnd hook writes `tool_mix.json` when a session ends (fail-open 
 **A — copy-paste ($0):**
 
 ```bash
-WS=~/.grok/sessions/%2Fhome%2Fsustainableabundance%2FWork%2Fpersonal%2Fgrok-build
+# from grok-build repo root (any clone path)
+WS=~/.grok/sessions/$(python3 -c 'import urllib.parse,os; print(urllib.parse.quote(os.path.abspath("."), safe=""))')
 python3 ~/.grok/hooks/bin/tool-mix-observe.py --workspace-dir "$WS" --pick-largest 5
 # one session + sticker:
 python3 ~/.grok/hooks/bin/tool-mix-observe.py "$WS/<session-id>"
@@ -245,14 +246,15 @@ python3 -c 'import json,sys; p=sys.argv[1]; print(json.dumps({k:json.load(open(p
 **B — official grok, external terminal only** (stock `~/.grok/bin/grok`; **no soft-call** — this is control / stable implementer, not the gate proof):
 
 ```bash
-cd ~/Work/personal/grok-build
+cd /path/to/grok-build
 # another terminal — not a tool call from a live session
 grok -p --output-format json --always-approve \
   --tools "read_file,grep,list_dir" \
   --disallowed-tools "Agent,spawn_subagent,run_terminal_cmd" \
   "In this repo, find SoftCallBudget: the file that defines it and the file that records/nudge/soft-caps. Read only those files (offset/limit if long). Report: paths, nudge and soft-cap numbers, then STOP. Do not edit. Do not spawn agents."
 # stdout includes sessionId — then:
-python3 ~/.grok/hooks/bin/tool-mix-observe.py ~/.grok/sessions/%2Fhome%2Fsustainableabundance%2FWork%2Fpersonal%2Fgrok-build/<sessionId>
+WS=~/.grok/sessions/$(python3 -c 'import urllib.parse,os; print(urllib.parse.quote(os.path.abspath("."), safe=""))')
+python3 ~/.grok/hooks/bin/tool-mix-observe.py "$WS/<sessionId>"
 ```
 
 `--tools` keeps the probe on the invoice types we care about (reads/grep). `--disallowed-tools` blocks nested agents and shell storms. Same prompt, same cwd, compare `tools/user_turn.max` and `tool_result_chars_sum`.
@@ -260,7 +262,7 @@ python3 ~/.grok/hooks/bin/tool-mix-observe.py ~/.grok/sessions/%2Fhome%2Fsustain
 **C — treatment (after this TUI is quit, from-source binary):**
 
 ```bash
-cd ~/Work/personal/grok-build
+cd /path/to/grok-build
 PROTOC=/usr/bin/protoc cargo build -p xai-grok-pager
 ./target/debug/xai-grok-pager -p --output-format json --always-approve \
   --tools "read_file,grep,list_dir" \
@@ -289,8 +291,8 @@ Both report the same **package** version after rebase onto the 1.0.3 monorepo sy
 # grok = official. Alias lives in ~/.config/shell/local/personal.sh (not ~/.zshrc):
 #   grok-local → GROK_HOME=~/.grok-local + from-source xai-grok-pager
 
-# join the correct lake
-WS='%2Fhome%2Fsustainableabundance%2FWork%2Fpersonal%2Fgrok-build'
+# join the correct lake (run from grok-build repo root)
+WS=$(python3 -c 'import urllib.parse,os; print(urllib.parse.quote(os.path.abspath("."), safe=""))')
 python3 ~/.grok/hooks/bin/tool-mix-observe.py --workspace-dir ~/.grok/sessions/$WS --pick-largest 1
 GROK_HOME=~/.grok-local python3 ~/.grok/hooks/bin/tool-mix-observe.py \
   --workspace-dir ~/.grok-local/sessions/$WS --pick-largest 1
